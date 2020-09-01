@@ -1,0 +1,12 @@
+html, body {
+}
+body {
+  display: flex;
+  gap: 10px;
+}
+.stateChart {
+}
+
+hedaer {
+  color: pink;
+}
