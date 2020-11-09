@@ -1,15 +1,18 @@
 function findStateColor(stateData, winners) {
   let stateName = stateData.properties.name;
-  let winner = winners[1992][stateName];
+  let winner = winners[stateName];
   if (winner == "republican") {
     return "red"
-  } else if (winner == "democrat") {
+    // Minnesota has weird party name
+  } else if (winner == "democrat" || winner == "democratic-farmer-labor") {
     return "blue"
   } else {
     return "green"
   }
 }
 
+// This data transformation should happen before we even get the data
+// It's not very convenient to do it in JS
 function calculateWinners(electionResults) {
   let data = {};
   for(let {year, candidatevotes, party, state} of electionResults) {
@@ -25,8 +28,6 @@ function calculateWinners(electionResults) {
       let stateData = yearData[stateName]
       let maxVote = Math.max(...Object.values(stateData));
       let winner = Object.keys(stateData).find(c => maxVote == stateData[c]);
-      console.log(year, stateName, stateData, maxVote, winner)
-
       result[year] ||= {};
       result[year][stateName] = winner;
     }
@@ -34,18 +35,35 @@ function calculateWinners(electionResults) {
   return result;
 }
 
-async function main() {
+// Data
+let year = 1992;
+let winners;
+let usMap;
+
+function drawMap() {
   let width = 960;
   let height = 500;
 
-  let header = d3.select("body")
-    .append("h4")
-    .text("Election Results Map")
+  // remove any previous content
+  d3.select("body").selectAll("*").remove();
 
-  let svg = d3.select("body")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+  // setup header
+  d3.select("body")
+    .append("h3")
+    .text(`${year} Election Results Map`)
+
+  let buttonRow = d3.select("body").append("div")
+
+  // buttons
+  for (let y of [1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008, 2012, 2016]) {
+    buttonRow
+      .append("button")
+      .text(y)
+      .on("click", () => {
+        year = y;
+        drawMap()
+      })
+  }
 
   let projection = d3.geoAlbersUsa()
     .translate([width/2, height/2])
@@ -54,24 +72,28 @@ async function main() {
   let path = d3.geoPath()
     .projection(projection);
 
-  let electionResults = await d3.csv("1976-2016-president.csv");
-  let usMap = await d3.json("./us-states.json");
+  let svg = d3.select("body")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
 
-  let winners = calculateWinners(electionResults);
-
-  // console.log(electionResults[0])
-
-  let features = usMap.features;
   svg.selectAll("path")
-    .data(features)
+    .data(usMap)
     .enter()
     .append("path")
     .attr("d", path)
     .style("stroke", "#fff")
     .style("stroke-width", "1")
     .style("fill", function(d) {
-      return findStateColor(d, winners)
+      return findStateColor(d, winners[year])
     })
+}
+
+async function main() {
+  let electionResults = await d3.csv("1976-2016-president.csv");
+  usMap = (await d3.json("./us-states.json")).features;
+  winners = calculateWinners(electionResults);
+  drawMap()
 }
 
 main();
