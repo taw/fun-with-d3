@@ -1,3 +1,4 @@
+console.log("hello")
 function findStateColor(stateData, winners) {
   let stateName = stateData.properties.name;
   let winner = winners[stateName];
@@ -30,6 +31,7 @@ function calculateWinners(electionResults) {
       let winner = Object.keys(stateData).find(c => maxVote == stateData[c]);
       result[year] ||= {};
       result[year][stateName] = winner;
+      console.log(result)
     }
   }
   return result;
@@ -51,6 +53,7 @@ function drawMap() {
   d3.select("body")
     .append("h3")
     .text(`${year} Election Results Map`)
+    console.log('hi')
 
   let buttonRow = d3.select("body").append("div")
 
@@ -91,7 +94,7 @@ function drawMap() {
     })
     // mouse hover
     .append("svg:title")
-    .text(function(data) {return data.candidatevote; });
+    .text(function(data) {return data.candidatevotes; });
 
 }
 
