@@ -76,6 +76,8 @@ function drawMap() {
     .append("svg")
     .attr("width", width)
     .attr("height", height);
+    
+
 
   svg.selectAll("path")
     .data(usMap)
@@ -87,6 +89,10 @@ function drawMap() {
     .style("fill", function(d) {
       return findStateColor(d, winners[year])
     })
+    // mouse hover
+    .append("svg:title")
+    .text(function(data) {return data.candidatevote; });
+
 }
 
 async function main() {
